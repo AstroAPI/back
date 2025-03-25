@@ -2,27 +2,88 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
-class User
+#[ORM\Entity]
+#[ORM\Table(name: '"user"')] // Mettre le nom de table entre guillemets
+// OU utiliser un autre nom comme #[ORM\Table(name: 'app_user')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    #[ORM\Column(type: "integer")]
+    #[Groups(['user:read'])]
+    private int $id;
 
-    public function getId(): ?int
+    #[ORM\Column(type: "string", length: 180, unique: true)]
+    #[Groups(['user:read'])]
+    private string $email;
+
+    #[ORM\Column(type: "json")]
+    #[Groups(['user:read'])]
+    private array $roles = [];
+
+    #[ORM\Column(type: "string")]
+    private string $password;
+
+    // Getters et setters
+
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function setId(int $id): static
+    public function getEmail(): string
     {
-        $this->id = $id;
+        return $this->email;
+    }
 
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
         return $this;
+    }
+
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+        return $this;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+        return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // Si vous stockez des données temporaires sensibles comme un mot de passe en clair
+        // vous pouvez les effacer ici
+        // $this->plainPassword = null;
     }
 }
