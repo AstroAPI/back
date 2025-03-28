@@ -9,7 +9,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 #[ORM\Table(name: '"user"')] // Mettre le nom de table entre guillemets
-// OU utiliser un autre nom comme #[ORM\Table(name: 'app_user')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -28,6 +27,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: "string")]
     private string $password;
+
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    #[Groups(['user:read'])]
+    private ?string $city = null;
 
     // Getters et setters
 
@@ -77,6 +80,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): self
+    {
+        $this->city = $city;
+        return $this;
+    }
+
     /**
      * @see UserInterface
      */
@@ -84,6 +98,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // Si vous stockez des données temporaires sensibles comme un mot de passe en clair
         // vous pouvez les effacer ici
-        // $this->plainPassword = null;
     }
 }

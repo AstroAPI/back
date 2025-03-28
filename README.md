@@ -1,51 +1,106 @@
-# Symfony Docker
+# Projet API Symfony
 
-A [Docker](https://www.docker.com/)-based installer and runtime for the [Symfony](https://symfony.com) web framework,
-with [FrankenPHP](https://frankenphp.dev) and [Caddy](https://caddyserver.com/) inside!
+Ce dépôt contient une application API REST basée sur Symfony avec support Docker pour un développement et un déploiement faciles.
 
-![CI](https://github.com/dunglas/symfony-docker/workflows/CI/badge.svg)
+## 📋 Prérequis
 
-## Getting Started
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
-1. If not already done, [install Docker Compose](https://docs.docker.com/compose/install/) (v2.10+)
-2. Run `docker compose build --no-cache` to build fresh images
-3. Run `docker compose up --pull always -d --wait` to set up and start a fresh Symfony project
-4. Open `https://localhost` in your favorite web browser and [accept the auto-generated TLS certificate](https://stackoverflow.com/a/15076602/1352334)
-5. Run `docker compose down --remove-orphans` to stop the Docker containers.
+## 🚀 Mise en route
 
-## Features
+### Cloner le dépôt
 
-* Production, development and CI ready
-* Just 1 service by default
-* Blazing-fast performance thanks to [the worker mode of FrankenPHP](https://github.com/dunglas/frankenphp/blob/main/docs/worker.md) (automatically enabled in prod mode)
-* [Installation of extra Docker Compose services](docs/extra-services.md) with Symfony Flex
-* Automatic HTTPS (in dev and prod)
-* HTTP/3 and [Early Hints](https://symfony.com/blog/new-in-symfony-6-3-early-hints) support
-* Real-time messaging thanks to a built-in [Mercure hub](https://symfony.com/doc/current/mercure.html)
-* [Vulcain](https://vulcain.rocks) support
-* Native [XDebug](docs/xdebug.md) integration
-* Super-readable configuration
+```bash
+git clone <url-du-dépôt>
+cd api
+```
 
-**Enjoy!**
+### Démarrer l'environnement Docker
 
-## Docs
+```bash
+# Construire et démarrer les conteneurs en mode détaché
+docker compose up -d --build
 
-1. [Options available](docs/options.md)
-2. [Using Symfony Docker with an existing project](docs/existing-project.md)
-3. [Support for extra services](docs/extra-services.md)
-4. [Deploying in production](docs/production.md)
-5. [Debugging with Xdebug](docs/xdebug.md)
-6. [TLS Certificates](docs/tls.md)
-7. [Using MySQL instead of PostgreSQL](docs/mysql.md)
-8. [Using Alpine Linux instead of Debian](docs/alpine.md)
-9. [Using a Makefile](docs/makefile.md)
-10. [Updating the template](docs/updating.md)
-11. [Troubleshooting](docs/troubleshooting.md)
+# Consulter les logs si nécessaire
+docker compose logs -f
+```
 
-## License
+L'application sera disponible à:
+- API: https://localhost
 
-Symfony Docker is available under the MIT License.
+## 🛠️ Commandes de développement
 
-## Credits
+### Commandes Composer
 
-Created by [Kévin Dunglas](https://dunglas.dev), co-maintained by [Maxime Helias](https://twitter.com/maxhelias) and sponsored by [Les-Tilleuls.coop](https://les-tilleuls.coop).
+```bash
+# Installer les dépendances
+docker compose exec php composer install
+
+# Ajouter un package
+docker compose exec php composer require <nom-du-package>
+
+# Supprimer un package
+docker compose exec php composer remove <nom-du-package>
+```
+
+### Commandes Symfony Console
+
+```bash
+# Lister toutes les commandes disponibles
+docker compose exec php bin/console
+
+# Vider le cache
+docker compose exec php bin/console cache:clear
+
+# Créer la base de données
+docker compose exec php bin/console doctrine:database:create
+
+# Créer une migration
+docker compose exec php bin/console make:migration
+
+# Exécuter les migrations
+docker compose exec php bin/console doctrine:migrations:migrate
+
+# Créer une nouvelle entité
+docker compose exec php bin/console make:entity
+```
+
+### Accès à la base de données
+
+```bash
+# Se connecter à la base de données PostgreSQL (par défaut)
+docker compose exec database psql -U app -d app
+```
+
+## 🔒 Configuration de l'environnement
+
+- La configuration par défaut est stockée dans `.env`
+- Créez un fichier `.env.local` pour des variables d'environnement personnalisées
+
+## 📦 Déploiement
+
+Pour le déploiement en production, utilisez la configuration de production fournie:
+
+```bash
+SERVER_NAME=votre-domaine.com \
+APP_SECRET=votre-secret \
+CADDY_MERCURE_JWT_SECRET=votre-clé-jwt \
+docker compose -f compose.yaml -f compose.prod.yaml up -d
+```
+
+## 📋 Documentation supplémentaire
+
+Une documentation supplémentaire est disponible dans le répertoire `docs/`:
+
+- `docs/production.md`: Guide de déploiement en production
+- `docs/mysql.md`: Utilisation de MySQL au lieu de PostgreSQL
+- `docs/troubleshooting.md`: Problèmes courants et solutions
+- `docs/xdebug.md`: Configuration de Xdebug
+- `docs/makefile.md`: Utilisation de Makefile pour les tâches courantes
+
+## 📝 Licence
+
+Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails. Symfony API Project
+
+This repository contains a Symfony-based REST API application with Docker support for easy development and deployment.

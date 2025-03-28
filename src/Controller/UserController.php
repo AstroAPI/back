@@ -48,6 +48,12 @@ final class UserController extends AbstractController
     ): JsonResponse
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        $data = json_decode($request->getContent(), true);
+
+        // Vérifier si la ville est fournie
+        if (isset($data['city'])) {
+            $user->setCity($data['city']);
+        }
         
         // Hasher le mot de passe
         $hashedPassword = $passwordHasher->hashPassword($user, $user->getPassword());
@@ -74,19 +80,27 @@ final class UserController extends AbstractController
             return $this->json(['message' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
         }
         
-        $updatedUser = $serializer->deserialize($request->getContent(), User::class, 'json');
+        // Au lieu de désérialiser directement dans un nouvel objet,
+        // extrayez simplement les données de la requête
+        $data = json_decode($request->getContent(), true);
         
         // Mise à jour des champs
-        $user->setEmail($updatedUser->getEmail());
+        if (isset($data['email'])) {
+            $user->setEmail($data['email']);
+        }
+        
+        if (isset($data['city'])) {
+            $user->setCity($data['city']);
+        }
         
         // Ne mettre à jour le rôle que si l'utilisateur est admin
-        if ($this->isGranted('ROLE_ADMIN')) {
-            $user->setRoles($updatedUser->getRoles());
+        if ($this->isGranted('ROLE_ADMIN') && isset($data['roles'])) {
+            $user->setRoles($data['roles']);
         }
         
         // Si un nouveau mot de passe est fourni, le hasher
-        if ($updatedUser->getPassword()) {
-            $hashedPassword = $passwordHasher->hashPassword($user, $updatedUser->getPassword());
+        if (isset($data['password']) && !empty($data['password'])) {
+            $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
             $user->setPassword($hashedPassword);
         }
         
