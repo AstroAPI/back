@@ -1,8 +1,0 @@
-scheduler:
-    transport:
-        dsn: 'doctrine://default' # Utilise la base de données par défaut pour stocker les tâches
-    tasks:
-        daily_horoscope:
-            type: 'callback'
-            callback: 'App\\Service\\HoroscopeService::displayDailyHoroscope'
-            expression: '@daily' # Execution tous les jours

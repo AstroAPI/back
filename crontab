@@ -1,0 +1,5 @@
+# crontab
+
+# Exécution de la commande Symfony app:run-horoscope tous les jours à 8h
+0 8 * * * echo "Cron job started at $(date)" >> /app/cron.log 2>&1 && cd /app && /usr/local/bin/php /app/bin/console app:run-horoscope >> /app/cron.log 2>&1
+
