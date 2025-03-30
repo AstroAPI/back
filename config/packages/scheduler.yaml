@@ -1,0 +1,8 @@
+scheduler:
+    transport:
+        dsn: 'doctrine://default' # Stocke les taches en utilisant la bdd
+    tasks:
+        daily_task:
+            type: 'command'
+            command: 'app:daily-task'
+            expression: '@daily' # Exécution chaque jour

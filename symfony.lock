@@ -26,8 +26,6 @@
             "migrations/.gitignore"
         ]
     },
-<<<<<<< HEAD
-=======
     "lexik/jwt-authentication-bundle": {
         "version": "3.1",
         "recipe": {
@@ -40,7 +38,6 @@
             "config/packages/lexik_jwt_authentication.yaml"
         ]
     },
->>>>>>> origin/nolan_back
     "symfony/console": {
         "version": "7.2",
         "recipe": {
@@ -94,6 +91,18 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
+    "symfony/messenger": {
+        "version": "7.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "6.0",
+            "ref": "ba1ac4e919baba5644d31b57a3284d6ba12d52ee"
+        },
+        "files": [
+            "config/packages/messenger.yaml"
+        ]
+    },
     "symfony/routing": {
         "version": "7.2",
         "recipe": {
@@ -106,8 +115,6 @@
             "config/packages/routing.yaml",
             "config/routes.yaml"
         ]
-<<<<<<< HEAD
-=======
     },
     "symfony/security-bundle": {
         "version": "7.2",
@@ -146,6 +153,5 @@
         "files": [
             "config/packages/vich_uploader.yaml"
         ]
->>>>>>> origin/nolan_back
     }
 }
