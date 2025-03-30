@@ -1,8 +1,8 @@
 scheduler:
     transport:
-        dsn: 'doctrine://default' # Stocke les taches en utilisant la bdd
+        dsn: 'doctrine://default' # Utilise la base de données par défaut pour stocker les tâches
     tasks:
-        daily_task:
-            type: 'command'
-            command: 'app:daily-task'
-            expression: '@daily' # Exécution chaque jour
+        daily_horoscope:
+            type: 'callback'
+            callback: 'App\\Service\\HoroscopeService::displayDailyHoroscope'
+            expression: '@daily' # Execution tous les jours
