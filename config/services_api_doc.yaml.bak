@@ -1,0 +1,29 @@
+# Configuration spécifique pour les services de l'API Doc
+services:
+    # Configuration par défaut pour les services dans *ce* fichier
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+    # Définition explicite des services NelmioApiDoc
+    nelmio_api_doc.generator.default:
+        class: Nelmio\ApiDocBundle\ApiDocGenerator
+        public: true
+        arguments:
+            - !tagged nelmio_api_doc.describer
+            - !tagged nelmio_api_doc.model_describer
+            
+    nelmio_api_doc.controller.swagger:
+        class: Nelmio\ApiDocBundle\Controller\DocumentationController
+        public: true
+        arguments:
+            - '@nelmio_api_doc.generator.default'
+            
+    nelmio_api_doc.controller.swagger_ui:
+        class: Nelmio\ApiDocBundle\Controller\SwaggerUiController
+        public: true
+        arguments:
+            - '@nelmio_api_doc.render_docs'  # Service de rendu pour OpenAPI
+            - '@router'  # Router Symfony
+            - '@assets.packages'  # Packages d'assets
+            - '%nelmio_api_doc.use_validation_groups%'  # Paramètre corrigé
