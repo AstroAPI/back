@@ -4,22 +4,27 @@ namespace App\Service;
 
 use App\Repository\HoroscopeTemplateRepository;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class HoroscopeService
 {
     private $weatherService;
     private $templateRepository;
     private $logger;
+    private $cache;
     private $defaultTemplates;
 
     public function __construct(
         OpenWeatherMapService $weatherService, 
         HoroscopeTemplateRepository $templateRepository,
-        LoggerInterface $weatherLogger
+        LoggerInterface $weatherLogger,
+        TagAwareCacheInterface $horoscopeCache
     ) {
         $this->weatherService = $weatherService;
         $this->templateRepository = $templateRepository;
         $this->logger = $weatherLogger;
+        $this->cache = $horoscopeCache;
         
         // Templates par défaut si aucun n'est trouvé en base
         $this->initializeDefaultTemplates();
@@ -57,50 +62,81 @@ class HoroscopeService
 
     public function generateHoroscopeForSign(string $sign, string $city): array
     {
-        // Normaliser le signe (première lettre en majuscule)
-        $sign = ucfirst(strtolower($sign));
+        // Clé de cache unique basée sur le signe et la ville
+        $cacheKey = 'horoscope_' . strtolower($sign) . '_' . strtolower($city);
         
-        // Valider le signe
-        $validSigns = ['Bélier', 'Taureau', 'Gémeaux', 'Cancer', 'Lion', 'Vierge', 
-                       'Balance', 'Scorpion', 'Sagittaire', 'Capricorne', 'Verseau', 'Poissons'];
-        
-        if (!in_array($sign, $validSigns)) {
+        // Utiliser le cache avec une durée de vie d'une heure
+        return $this->cache->get($cacheKey, function (ItemInterface $item) use ($sign, $city) {
+            $item->expiresAfter(3600); // 1 heure
+            $item->tag(['horoscope', 'sign_' . strtolower($sign), 'city_' . strtolower($city)]);
+            
+            $this->logger->info('Génération d\'un nouvel horoscope pour ' . $sign . ' à ' . $city);
+            
+            // Normaliser le signe (première lettre en majuscule)
+            $sign = ucfirst(strtolower($sign));
+            
+            // Valider le signe
+            $validSigns = ['Bélier', 'Taureau', 'Gémeaux', 'Cancer', 'Lion', 'Vierge', 
+                           'Balance', 'Scorpion', 'Sagittaire', 'Capricorne', 'Verseau', 'Poissons'];
+            
+            if (!in_array($sign, $validSigns)) {
+                return [
+                    'success' => false,
+                    'message' => 'Signe astrologique invalide. Valeurs acceptées: ' . implode(', ', $validSigns)
+                ];
+            }
+            
+            // Récupérer les données météo
+            $weatherData = $this->weatherService->getCurrentWeather($city);
+            
+            if (!$weatherData['success']) {
+                return [
+                    'success' => false,
+                    'message' => 'Impossible de générer l\'horoscope: ' . ($weatherData['error'] ?? 'Erreur inconnue')
+                ];
+            }
+            
+            $temperature = $weatherData['data']['temperature'];
+            $condition = $weatherData['data']['condition'];
+            
+            // Déterminer la catégorie de température
+            $tempCategory = $this->getTempCategory($temperature);
+            
+            // Générer l'horoscope
+            $horoscopeText = $this->getHoroscope($sign, $condition, $tempCategory);
+            
             return [
-                'success' => false,
-                'message' => 'Signe astrologique invalide. Valeurs acceptées: ' . implode(', ', $validSigns)
+                'success' => true,
+                'sign' => $sign,
+                'city' => $city,
+                'weather' => [
+                    'temperature' => $temperature,
+                    'condition' => $condition,
+                    'description' => $weatherData['data']['description'],
+                ],
+                'horoscope' => $horoscopeText,
+                'cached' => false // Au moment de la génération, ce n'est pas encore en cache
             ];
+        });
+    }
+    
+    /**
+     * Invalide le cache pour un signe et/ou une ville spécifique
+     */
+    public function invalidateCache(?string $sign = null, ?string $city = null): void
+    {
+        $tags = ['horoscope'];
+        
+        if ($sign) {
+            $tags[] = 'sign_' . strtolower($sign);
         }
         
-        // Récupérer les données météo
-        $weatherData = $this->weatherService->getCurrentWeather($city);
-        
-        if (!$weatherData['success']) {
-            return [
-                'success' => false,
-                'message' => 'Impossible de générer l\'horoscope: ' . ($weatherData['error'] ?? 'Erreur inconnue')
-            ];
+        if ($city) {
+            $tags[] = 'city_' . strtolower($city);
         }
         
-        $temperature = $weatherData['data']['temperature'];
-        $condition = $weatherData['data']['condition'];
-        
-        // Déterminer la catégorie de température
-        $tempCategory = $this->getTempCategory($temperature);
-        
-        // Générer l'horoscope
-        $horoscopeText = $this->getHoroscope($sign, $condition, $tempCategory);
-        
-        return [
-            'success' => true,
-            'sign' => $sign,
-            'city' => $city,
-            'weather' => [
-                'temperature' => $temperature,
-                'condition' => $condition,
-                'description' => $weatherData['data']['description'],
-            ],
-            'horoscope' => $horoscopeText
-        ];
+        $this->cache->invalidateTags($tags);
+        $this->logger->info('Cache invalidé pour les tags: ' . implode(', ', $tags));
     }
     
     private function getTempCategory(float $temperature): string
