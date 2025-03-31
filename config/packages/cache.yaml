@@ -1,24 +1,24 @@
 framework:
     cache:
-        # Utilisation de Redis comme système de cache par défaut
-        app: cache.adapter.redis
-        default_redis_provider: redis://redis:6379
-        # Configuration des pools de cache spécifiques
+        app: cache.adapter.filesystem
+        
         pools:
             # Cache pour les données météorologiques
             weather.cache:
-                adapter: cache.adapter.redis
-                tags: true
+                adapter: cache.adapter.filesystem
                 default_lifetime: 3600  # 1 heure
+            
             # Cache pour les horoscopes
             horoscope.cache:
-                adapter: cache.adapter.redis
-                tags: true
+                adapter: cache.adapter.filesystem
                 default_lifetime: 3600  # 1 heure
+            
             # Cache pour l'authentification
             auth.cache:
-                adapter: cache.adapter.redis
+                adapter: cache.adapter.filesystem
                 default_lifetime: 86400  # 24 heures
-            # Cache spécifique pour NelmioApiDoc
+                
+            # Cache simplifié pour NelmioApiDoc
             nelmio_api_doc.cache:
-                adapter: cache.adapter.filesystem # Utiliser le système de fichiers pour éviter les problèmes Redis
+                adapter: cache.adapter.filesystem
+                default_lifetime: 3600

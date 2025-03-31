@@ -5,7 +5,6 @@ services:
         autowire: true
         autoconfigure: true
         public: false
-
     # Définition explicite des services NelmioApiDoc
     nelmio_api_doc.generator.default:
         class: Nelmio\ApiDocBundle\ApiDocGenerator
@@ -24,6 +23,7 @@ services:
         class: Nelmio\ApiDocBundle\Controller\SwaggerUiController
         public: true
         arguments:
-            - '@twig'
-            - '@assets.packages'
-            - '@nelmio_api_doc.generator.default'
+            - '@nelmio_api_doc.render_docs'  # Service de rendu pour OpenAPI
+            - '@router'  # Router Symfony
+            - '@assets.packages'  # Packages d'assets
+            - '%nelmio_api_doc.use_validation_groups%'  # Paramètre corrigé

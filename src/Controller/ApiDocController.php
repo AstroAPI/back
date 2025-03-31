@@ -3,38 +3,58 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Nelmio\ApiDocBundle\Controller\DocumentationController;
+use Twig\Environment;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ApiDocController extends AbstractController
 {
-    private $documentationController;
+    private $renderOpenApi;
+    private $twig;
 
     public function __construct(
-        #[Autowire(service: 'nelmio_api_doc.controller.swagger_ui')] DocumentationController $documentationController = null
+        #[Autowire(service: 'nelmio_api_doc.render_docs')] $renderOpenApi,
+        Environment $twig
     ) {
-        $this->documentationController = $documentationController;
+        $this->renderOpenApi = $renderOpenApi;
+        $this->twig = $twig;
     }
 
-    #[Route('/api/doc', name: 'app.swagger_ui', methods: ['GET'])]
-    public function swaggerUi(): Response
+    #[Route('/api/custom-doc', name: 'app.custom_swagger_ui', methods: ['GET'])]
+    public function swaggerUi(Request $request): Response
     {
-        if (!$this->documentationController) {
-            return new Response('Swagger UI controller not available', Response::HTTP_SERVICE_UNAVAILABLE);
-        }
-        
-        return $this->documentationController->__invoke($this->container->get('request_stack')->getCurrentRequest());
+        return new Response(
+            $this->twig->render('@NelmioApiDoc/SwaggerUi/index.html.twig', [
+                'swagger_data' => [
+                    'spec' => $this->renderOpenApi->renderFromRequest($request, 'default', '/api/custom-doc.json'),
+                ],
+            ])
+        );
     }
 
-    #[Route('/api/doc.json', name: 'app.swagger', methods: ['GET'])]
-    public function swagger(): Response
+    #[Route('/api/custom-doc.json', name: 'app.custom_swagger', methods: ['GET'])]
+    public function swagger(Request $request): Response
     {
-        if (!$this->documentationController) {
-            return new Response('Swagger controller not available', Response::HTTP_SERVICE_UNAVAILABLE);
+        try {
+            $spec = $this->renderOpenApi->renderFromRequest($request, 'default', '/api/custom-doc.json');
+            
+            return new Response(
+                $spec,
+                200,
+                ['Content-Type' => 'application/json']
+            );
+        } catch (\Exception $e) {
+            // Ajouter un debug pour voir l'erreur exacte
+            return new Response(
+                json_encode([
+                    'error' => $e->getMessage(), 
+                    'trace' => $e->getTraceAsString()
+                ]),
+                500,
+                ['Content-Type' => 'application/json']
+            );
         }
-        
-        return $this->documentationController->__invoke($this->container->get('request_stack')->getCurrentRequest());
     }
 }

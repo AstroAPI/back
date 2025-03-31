@@ -4,8 +4,6 @@
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
-imports:
-     - { resource: services_api_doc.yaml }
 
 parameters:
     app.openweathermap.api_key: '%env(OPENWEATHERMAP_API_KEY)%'
@@ -56,20 +54,17 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-    redis:
+    redis.client:
         class: Redis
         calls:
             - [connect, ['%env(REDIS_HOST)%', '%env(int:REDIS_PORT)%']]
-            # Conditionnez l'authentification à l'existence d'un mot de passe
-            - [auth, ['%env(REDIS_PASSWORD)%']]
-        public: true
-
+            - [auth, ['%env(default::REDIS_PASSWORD)%']]
+            - [setOption, [2, 1]] 
+        
     # Adaptateur Redis pour le cache Symfony
     cache.adapter.redis:
         class: Symfony\Component\Cache\Adapter\RedisAdapter
         arguments:
-            - '@redis'
-            - 'astro_api_cache'  # Préfixe pour les clés de cache
-        public: true
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+            - '@redis.client'  
+            - 'astro_api'      
+            - 3600        

@@ -1,16 +1,9 @@
 nelmio_api_doc:
-    areas:
-        default:
-            path_patterns:
-                - ^/api(?!/doc$)
     documentation:
         info:
             title: AstroAPI
-            description: API pour l'horoscope basé sur les données météorologiques
+            description: API pour la gestion des données astronomiques et horoscopes
             version: 1.0.0
-        components:
-            securitySchemes:
-                Bearer:
-                    type: http
-                    scheme: bearer
-                    bearerFormat: JWT
+    areas:
+        path_patterns:
+            - ^/api(?!/doc)

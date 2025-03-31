@@ -46,8 +46,10 @@ docker compose up -d --build
 
 # Consulter les logs si nécessaire
 docker compose logs -f
-```
 
+# Ajout de la clé de l'API dans le .env
+352f9c7354c05df9df08cbedd2b0f202
+```
 L'application sera disponible à:
 
 - API: https://localhost
