@@ -11,7 +11,7 @@ AstroAPI est une interface de programmation d'application RESTful conçue pour f
 - 🪐 Horoscopes personnalisés basés sur les conditions météorologiques
 - 📊 Mise en cache optimisée avec Redis
 - 📄 Documentation API complète avec Swagger/OpenAPI
-- 🧪 Tests unitaires et fonctionnels
+- 🧪 Tests unitaires cassés
 - 🖼️ Gestion de médias personnalisée
 
 ## 🛠️ Technologies utilisées
